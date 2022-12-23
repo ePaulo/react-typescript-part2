@@ -1,0 +1,38 @@
+.create-product {
+  border: 1px dashed #ccc;
+  padding: 10px;
+
+  &__form {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 5px;
+
+    & > label {
+      margin-bottom: 0;
+    }
+
+    & > input[type='text'],
+    & > input[type='number'],
+    & > input[type='file'],
+    & > textarea {
+      margin-top: 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    & > input[type='submit'] {
+      width: 200px;
+      margin-top: 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    &__error {
+      padding-left: 0.5rem;
+      color: grey;
+      font-style: italic;
+    }
+  }
+}
