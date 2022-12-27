@@ -9,16 +9,23 @@
 
     & > label {
       margin-bottom: 0;
+
+      & > span {
+        // display: inline-block;
+        margin-bottom: 0.5rem;
+        padding-left: 0.5rem;
+        color: grey;
+        font-style: italic;
+      }
     }
 
-    & > input[type='text'],
-    & > input[type='number'],
-    & > input[type='file'],
+    & > input,
     & > textarea {
       margin-top: 0;
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      font-size: 1rem;
     }
 
     & > input[type='submit'] {
@@ -27,12 +34,6 @@
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
-    }
-
-    &__error {
-      padding-left: 0.5rem;
-      color: grey;
-      font-style: italic;
     }
   }
 }

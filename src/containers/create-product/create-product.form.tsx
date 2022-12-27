@@ -1,23 +1,63 @@
 import './create-product.styles.scss'
 import { useForm } from 'react-hook-form'
-
-type FormData = {
-  id: string
-  name: string
-  description: string
-  price: number
-  imageURL: string
-  quantity: number
-}
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 
 // console.log(crypto.randomUUID())
+
+const DataSchema = z
+  .object({
+    id: z.string().uuid({ message: 'Invalid ID' }),
+
+    name: z
+      .string()
+      .min(8, { message: 'Enter a product name with >7 characters' })
+      .max(64, { message: 'Name must be less than 65 characters' })
+      .regex(/^[A-Za-z0-9 -_:]+$/, {
+        message: 'Invalid characters in the name',
+      }),
+
+    description: z
+      .string()
+      .min(25, { message: 'Enter a description with >24 characters' })
+      .max(250, { message: 'Description must be less than 250 characters' })
+      .regex(/^[A-Za-z0-9 -_:]+$/, {
+        message: 'Invalid characters in the description',
+      }),
+
+    price: z
+      .number({ invalid_type_error: 'Enter dollar value, numbers only' })
+      .gte(0, { message: 'Enter a positive value (0 if FREE)' })
+      .lte(10000, { message: 'Price must be less than or equal to $10,000' })
+      .refine(value => (value * 100) % 1 === 0, {
+        message: 'Price must be a multiple of 0.01',
+      }),
+
+    imageURL: z.string().regex(/\.(gif|jpe?g|tiff?|png|bmp)$/i, {
+      message: 'Enter image file name (gif/jpg/png/bmp) or URL',
+    }),
+    // TODO revise quantity to show correct error message
+    quantity: z
+      .number({
+        required_error: 'Please enter a quantity (0 if out of stock)',
+        invalid_type_error: 'Quantity must be a whole number',
+      })
+      .int({ message: 'Quantity must be a whole number' })
+      .min(0, { message: 'Quantity must be a positive number' })
+      .max(9999, { message: 'Quantity must be less than 10,000' }),
+  })
+  .required()
+
+type FormData = z.infer<typeof DataSchema>
 
 const CreateProductForm = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>()
+  } = useForm<FormData>({
+    resolver: zodResolver(DataSchema),
+  })
 
   const onSubmit = (data: FormData) => console.log(data)
 
@@ -27,127 +67,34 @@ const CreateProductForm = () => {
     <form className='create-product__form' onSubmit={handleSubmit(onSubmit)}>
       <label htmlFor='name'>
         Name:
-        {errors.name && (
-          <span className='create-product__form__error'>
-            {errors.name.message}
-          </span>
-        )}
+        {errors.name && <span>{errors.name.message}</span>}
       </label>
-      <input
-        id='name'
-        type='text'
-        {...register('name', {
-          required: 'This field is required',
-          minLength: {
-            value: 5,
-            message: 'Name must be at least 5 characters',
-          },
-          maxLength: {
-            value: 50,
-            message: 'Name must be less than 50 characters',
-          },
-          pattern: {
-            value: /^[A-Za-z0-9 -_:]+$/,
-            message: 'Invalid characters in the name',
-          },
-        })}
-      />
+      <input id='name' {...register('name')} />
 
       <label htmlFor='description'>
         Description:
-        {errors.description && (
-          <span className='create-product__form__error'>
-            {errors.description.message}
-          </span>
-        )}
+        {errors.description && <span>{errors.description.message}</span>}
       </label>
-      <textarea
-        id='description'
-        {...register('description', {
-          required: 'This field is required',
-          minLength: {
-            value: 25,
-            message: 'Description must be at least 25 characters',
-          },
-          maxLength: {
-            value: 250,
-            message: 'Description must be less than 250 characters',
-          },
-          pattern: {
-            value: /^[A-Za-z0-9 -_:]+$/,
-            message: 'Invalid characters in the description',
-          },
-        })}
-      />
+      <textarea id='description' {...register('description')} />
 
       <label htmlFor='price'>
         Price:
-        {errors.price && (
-          <span className='create-product__form__error'>
-            {errors.price.message}
-          </span>
-        )}
+        {errors.price && <span>{errors.price.message}</span>}
       </label>
-      <input
-        id='price'
-        type='number'
-        defaultValue='0'
-        step='0.01'
-        {...register('price', {
-          required: 'This field is required',
-          valueAsNumber: true,
-          min: { value: 0.99, message: 'Price must be at least $0.99' },
-          max: { value: 999.99, message: 'Price must be less than $999.99' },
-          pattern: {
-            value: /^\$?[\d,]+(\.\d{2})?$/,
-            message: 'Invalid price format',
-          },
-        })}
-      />
+      <input id='price' {...register('price', { valueAsNumber: true })} />
 
       <label htmlFor='imageURL'>
         Image URL:
-        {errors.imageURL && (
-          <span className='create-product__form__error'>
-            {errors.imageURL.message}
-          </span>
-        )}
+        {errors.imageURL && <span>{errors.imageURL.message}</span>}
       </label>
-      <input
-        id='imageURL'
-        type='text'
-        {...register('imageURL', {
-          required: 'This field is required',
-          pattern: {
-            value: /\.(gif|jpe?g|tiff?|png|bmp)$/i,
-            message: 'Invalid image format',
-          },
-        })}
-      />
+      <input id='imageURL' {...register('imageURL')} />
 
       <label htmlFor='quantity'>
         Quantity:
-        {errors.quantity && (
-          <span className='create-product__form__error'>
-            {errors.quantity.message}
-          </span>
-        )}
+        {errors.quantity && <span>{errors.quantity.message}</span>}
       </label>
-      <input
-        id='quantity'
-        type='number'
-        defaultValue='0'
-        {...register('quantity', {
-          required: true,
-          valueAsNumber: true,
-          min: { value: 0, message: 'Quantity must be at least 0' },
-          max: { value: 999, message: 'Quantity must be less than 999' },
-          pattern: {
-            value: /^\d+$/,
-            message: 'Invalid quantity format',
-          },
-        })}
-      />
+      <input id='quantity' {...register('quantity', { valueAsNumber: true })} />
+
       <input type='submit' />
     </form>
   )
